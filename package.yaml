@@ -24,7 +24,7 @@ dependencies:
 - matrix
 - random
 - random-shuffle
-- containers
+- gloss
 
 
 library:

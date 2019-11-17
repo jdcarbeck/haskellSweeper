@@ -1,17 +1,17 @@
-module Game (newGame, makeMove) where
+module Game (newGame, makeMove, win, lost, boardState, BoardState, Board) where
 
 import System.Random.Shuffle
 import System.Random
 import Data.Matrix
 import Data.List
 
-
 type Point = (Int,Int)
 
 type Bombs = Matrix Bool
 type Solution = Matrix Int
 type Field = Matrix Char
-type Game = (Field, Solution)
+type Board = (Field, Solution)
+type BoardState = [(Point,Char)]
 
 data Move a = Reveal | Flag
 
@@ -101,17 +101,19 @@ findAdj (x:xs) found sol = findAdj xs' found' sol
  -- -------------------------------------------------------------------------
 -- Game Function here
 
-newGame :: Int -> Int -> Int -> StdGen -> Game
+newGame :: Int -> Int -> Int -> StdGen -> Board
 newGame w h nBombs rand = (matrix w h $ \(i,j) -> '*', sol)
                         where
                             bombs = genBombs w h nBombs rand
                             sol = genSolution bombs
 
-makeMove :: Point -> Bool -> Game -> Game
+makeMove :: Point -> Bool -> Board -> Board
 makeMove p b (state, sol) | b = ((reveal showPoints state sol), sol)
+                          | isFlaged = ((setElem '*' p state),sol)
                           | otherwise = ((setElem 'F' p state),sol)
                           where
                             showPoints = adj p sol
+                            isFlaged = (state!p == 'F')
 
 
 reveal :: [Point] -> Field -> Solution -> Field
@@ -125,5 +127,36 @@ reveal (x:xs) f sol = reveal xs f' sol
                     f' = setElem val x f
 
 -- win condition all bombs are marked
+win :: Board -> Bool
+win (state, sol) = check points (state, sol) marked (||)
+                where points = genPoints (nrows state) (ncols state)
 
+marked :: Point -> Board -> Bool
+marked p (state, sol) | isBomb && isMarked = True
+                      | otherwise = False
+                    where
+                        isBomb = (sol!p == -1)
+                        isMarked = (state!p == 'F')
 
+check :: [Point] -> Board -> (Point -> Board -> Bool) -> (Bool -> Bool -> Bool) -> Bool
+check (x:[]) g f _ = f x g
+check (x:xs) g f op = (f x g) `op` (check xs g f op)
+
+unCovered :: Point -> Board -> Bool
+unCovered p (state, sol) | isBomb && isReveal = True
+                         | otherwise = False
+                        where
+                            isBomb = (sol!p) == -1
+                            isReveal = (state!p == 'B')
+lost :: Board -> Bool
+lost (state, sol) = check points (state, sol) unCovered (||)
+                where points = genPoints (nrows state) (ncols state)
+
+boardState :: Board -> BoardState
+boardState (state, _) = genState state points
+                    where
+                        points = genPoints (nrows state) (ncols state)
+
+genState :: Field -> [Point] -> BoardState
+genState f (x:[]) = [(x,(f!x))]
+genState f (x:xs) = (x,(f!x)):genState f xs
