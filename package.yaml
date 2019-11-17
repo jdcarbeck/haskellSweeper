@@ -24,7 +24,8 @@ dependencies:
 - matrix
 - random
 - random-shuffle
-- gloss
+- miso
+
 
 
 library:

@@ -128,11 +128,12 @@ reveal (x:xs) f sol = reveal xs f' sol
 
 -- win condition all bombs are marked
 win :: Board -> Bool
-win (state, sol) = check points (state, sol) marked (||)
+win (state, sol) = check points (state, sol) marked (&&)
                 where points = genPoints (nrows state) (ncols state)
 
 marked :: Point -> Board -> Bool
 marked p (state, sol) | isBomb && isMarked = True
+                      | (not isBomb) = True
                       | otherwise = False
                     where
                         isBomb = (sol!p == -1)
