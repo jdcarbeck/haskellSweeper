@@ -1,4 +1,4 @@
-module Game (newGame, makeMove, win, lost, boardState, BoardState, Board) where
+module Game (genPoints, newGame, win, lost, makeMove, printBoard, Board, Field, Point) where
 
 import System.Random.Shuffle
 import System.Random
@@ -13,7 +13,6 @@ type Field = Matrix Char
 type Board = (Field, Solution)
 type BoardState = [(Point,Char)]
 
-data Move a = Reveal | Flag
 
 genBombs :: Int -> Int -> Int -> StdGen -> Bombs
 genBombs w h n r = matrix w h (\(i,j) -> elem (i,j) p)
@@ -161,3 +160,6 @@ boardState (state, _) = genState state points
 genState :: Field -> [Point] -> BoardState
 genState f (x:[]) = [(x,(f!x))]
 genState f (x:xs) = (x,(f!x)):genState f xs
+
+printBoard :: Board -> String
+printBoard (state, sol) = show state
