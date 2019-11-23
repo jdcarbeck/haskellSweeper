@@ -24,7 +24,12 @@ dependencies:
 - matrix
 - random
 - random-shuffle
-- miso
+- scotty
+- blaze-html
+- blaze-markup
+- text
+- aeson
+- vector
 
 
 

@@ -1,4 +1,4 @@
-module Solver (aiMove,getAdj,genPossibleMoves,getPossibleMoves,findNeighbors,makeMoves) where
+module Solver (aiMove) where
 
 import Game
 import Data.Matrix
@@ -10,38 +10,36 @@ type Move = (Point,Bool)
 
 type PossibleMoves = [Move]
 
--- GetFlaged labels = F
--- GetUnknown labels = *
--- Set of possible moves will be based on all points that have a Int then connected points
--- getAllAdj :: Board -> [Point]
+aiMove :: Board -> PossibleMoves
+aiMove (state, sol) = genPossibleMoves adjpoints revealed state
+                    where
+                        adjpoints = getCells (state, sol) isAdj
+                        revealed = getCells (state, sol) isRevealed
 
 -- Takes a board and creates a list of all points of adjacent type
-getAdj :: Board -> [Point]
-getAdj (state, sol) = findAdj points state
+getCells :: Board -> (Char -> Bool) -> [Point]
+getCells (state, sol) func = findCells points func state
                     where points = genPoints (nrows state) (ncols state)
 
-findAdj :: [Point] -> Field -> [Point]
-findAdj (x:[]) state | isAdj (state!x) = [x]
-                     | otherwise = [] 
-findAdj (x:xs) state | isAdj (state!x) = x:(findAdj xs state)
-                     | otherwise = findAdj xs state
+findCells :: [Point] -> (Char -> Bool) -> Field -> [Point]
+findCells (x:[]) func state | func (state!x) = [x]
+                            | otherwise = [] 
+findCells (x:xs) func state | func (state!x) = x:(findCells xs func state)
+                            | otherwise = findCells xs func state
+
+isRevealed :: Char -> Bool
+isRevealed c = (c /= '*')
 
 isAdj :: Char -> Bool
 isAdj c = (c /= ' ') && (c /= 'F') && (c /= '*')
 
--- TODO ISSUE IS TO DO WITH THE SOLUTION CONTAINING ALREAD MADE MOVES
-aiMove :: Board -> PossibleMoves
-aiMove (state, sol) = genPossibleMoves points state
-                    where
-                        points = getAdj (state, sol)
-
-genPossibleMoves :: [Point] -> Field -> PossibleMoves
-genPossibleMoves [] _ = []
-genPossibleMoves (x:[]) f  = getPossibleMoves x f
-genPossibleMoves (x:xs) f  = joinedMoves
+genPossibleMoves :: [Point] -> [Point] -> Field -> PossibleMoves
+genPossibleMoves [] p _ = []
+genPossibleMoves (x:[]) p f  = getPossibleMoves x p f
+genPossibleMoves (x:xs) p f  = joinedMoves
                             where
-                                movesForPoint = getPossibleMoves x f
-                                otherMoves = genPossibleMoves xs f
+                                movesForPoint = getPossibleMoves x p f
+                                otherMoves = genPossibleMoves xs p f
                                 moveType = getMoveType movesForPoint
                                 joinedMoves | moveType = otherMoves `union` movesForPoint
                                             | otherwise = movesForPoint `union` otherMoves
@@ -51,14 +49,14 @@ getMoveType :: PossibleMoves -> Bool
 getMoveType [] = False
 getMoveType ((_,b):_) = b
 
-getPossibleMoves :: Point -> Field -> PossibleMoves
-getPossibleMoves p field | (label == (length u)) = makeMoves f True
-                         | (label == ((length u) + (length f'))) = makeMoves f False
-                         | otherwise = []
+getPossibleMoves :: Point -> [Point] -> Field -> PossibleMoves
+getPossibleMoves p ps field | (label == (length u)) = makeMoves f True
+                            | (label == ((length u) + (length f'))) = makeMoves f False
+                            | otherwise = []
                     where
-                        f = findNeighbors p field notMine
-                        u = findNeighbors p field mine
-                        f' = findNeighbors p field unKnownCell
+                        f = (findNeighbors p field notMine) \\ ps
+                        u = (findNeighbors p field mine) \\ ps
+                        f' = (findNeighbors p field unKnownCell) \\ ps
                         label = digitToInt (field!p)
 
 notMine :: Char -> Bool
@@ -92,7 +90,7 @@ findNeighbors (i,j) f c = tl ++ t ++ tr ++ l ++ r ++ bl ++ b ++ br
 -- returns a cell of a field based on condition it is in bounds and equal to passed char
 getCellCon :: Point -> Field -> (Char -> Bool) -> [Point]
 getCellCon (i,j) f c | (isValidGet i j f) && (c (f!(i,j))) = [(i,j)]
-                     | otherwise = []
+                        | otherwise = []
 
 -- boolean function to wrap maybe case of safeGet
 isValidGet :: Int -> Int -> Matrix Char -> Bool
