@@ -24,7 +24,13 @@ dependencies:
 - matrix
 - random
 - random-shuffle
-- containers
+- scotty
+- blaze-html
+- blaze-markup
+- text
+- aeson
+- vector
+
 
 
 library:
