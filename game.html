@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Sweeper</title>
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <script src="https://unpkg.com/vue"></script>
+    </head>
+    <body>
+        <form action="/">
+            <label for="sizeInput">Board Demensions</label>
+            <input type="number" min="0" name="size" id="sizeInput">
+            <label for="bombInput">Number of Bombs</label>
+            <input type="number" min="0" name="bombs" id="bombInput">
+            <button type="submit">New Game</button>
+        </form>
+        <table>
+            <tr>
+                <th onclick="makeMove(this)">*</th>
+                <th onclick="makeMove(this)">*</th>
+                <th onclick="makeMove(this)">*</th>
+            </tr>
+            <tr>
+                <th onclick="makeMove(this)">*</th>
+                <th onclick="makeMove(this)">*</th>
+                <th onclick="makeMove(this)">*</th>
+            </tr>
+            <tr>
+                <th onclick="makeMove(this)">*</th>
+                <th onclick="makeMove(this)">*</th>
+                <th onclick="makeMove(this)">*</th>
+            </tr>
+        </table>
+        <script>
+            function makeMove(id){
+                id.innerHTML = "Ooops!";
+            }
+        </script>
+    </body>
+</html>

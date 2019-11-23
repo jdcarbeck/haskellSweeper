@@ -23,8 +23,9 @@ dependencies:
 - base >= 4.7 && < 5
 - matrix
 - random
+- vector
 - random-shuffle
-- miso
+- threepenny-gui
 
 
 
