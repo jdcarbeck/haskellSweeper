@@ -71,16 +71,17 @@ page = do
             H.script H.! A.src "https://unpkg.com/axios/dist/axios.min.js" $ " "
             H.script H.! A.src "https://unpkg.com/vue" $ " "
         H.body $ do
+            H.style $ ".cell { width: 20px; height: 20px; background-color: black; color: white; } #board{ margin-top: 10px; }"
             H.div H.! A.id "app" $ do
                 H.h1 "Minesweeper"
                 H.p "Click cells to reveal them, use the flag option to flag cells when clicking."
                 H.button H.! C.customAttribute "v-on:click" "newGame" $ "New Game"
                 H.button H.! C.customAttribute "v-on:click" "aiMove" $ "AI Move"
-                H.label H.! A.for "flagged" $ " "
+                H.label H.! A.for "flagged" $ "Reveal"
                 H.input H.! A.type_ "checkbox" H.! A.id "flagged" H.! C.customAttribute "v-model" "flag"
-                H.table $ do
+                H.table H.! A.id "board"$ do
                     H.tr H.! C.customAttribute "v-for" "(row,x) in boardState" $ do
-                        H.th H.! C.customAttribute "v-for" "(item,y) in row" H.! C.customAttribute "v-on:click" "makeMove(x,y)" $ "{{ item }}"
+                        H.th H.! A.class_ "cell" H.! C.customAttribute "v-for" "(item,y) in row" H.! C.customAttribute "v-on:click" "makeMove(x,y)" $ "{{ item }}" 
 
             H.script H.! A.type_ "application/javascript" $ "new Vue({ el: \"#app\", data: { boardState: [[]], boardSol: [[]], win: false, lost: false, flag: true }, methods: { newGame: function(){ console.log(\"Making a new game\"); axios.get(\"http://localhost:3000/new\") .then(resp =>{ console.log(resp.data); this.boardState = resp.data.state; this.boardSol = resp.data.sol; this.win = resp.data.isWon; this.lost = resp.data.isLost; }) .catch(error => {}) }, aiMove: function(){ console.log(\"Making a AI move\"); axios.post(\"http://localhost:3000/ai\", { \"mvState\": this.boardState, \"mvSol\": this.boardSol, \"x\": 0, \"y\": 0, \"mvType\": false, }) .then(resp =>{ console.log(resp.data); this.boardState = resp.data.state; this.boardSol = resp.data.sol; this.win = resp.data.isWon; this.lost = resp.data.isLost; }) .catch(error ={}) }, makeMove: function(x,y){ x = x+1; y = y+1; flag = this.flag; console.log(\"Making a move: \" + x + \", \" + y + \" Reveal: \" + flag); axios.post(\"http://localhost:3000/\",{ \"mvState\": this.boardState, \"mvSol\": this.boardSol, \"x\": x, \"y\": y, \"mvType\": this.flag, }) .then(resp =>{ console.log(resp.data.state); this.boardState = resp.data.state; this.boardSol = resp.data.sol; this.win = resp.data.isWon; this.lost = resp.data.isLost; }) .catch(error ={}) } }, mounted: function(){} });"
                 
@@ -110,12 +111,21 @@ ai :: MoveFromState -> ActionM()
 ai s = do 
     let boardState = fromLists $ mvState s
         boardSol = fromLists $ mvSol s
-        ((x,y),mv) = head $ aiMove (boardState,boardSol)
-        (state',sol') = makeMove (x,y) mv (boardState,boardSol)
-        stateArr = matrixToList state' (nrows state')
-        solArr = matrixToList sol' (nrows sol')
-        game = GameState stateArr solArr (win (state',sol')) (lost (state',sol'))
-    json game
+        list = aiMove (boardState,boardSol)
+    if list /= []
+    then do
+        let ((x,y),mv) = head $ list
+            (state',sol') = makeMove (x,y) mv (boardState,boardSol)
+            stateArr = matrixToList state' (nrows state')
+            solArr = matrixToList sol' (nrows sol')
+            newState = MoveFromState stateArr solArr (-1) (-1) False
+        ai newState
+    else do
+        let stateArr = mvState s
+            solArr = mvSol s
+            board = ((fromLists stateArr),(fromLists solArr))
+            game = GameState stateArr solArr (win board) (lost board)
+        json game
 
     --     (state,sol) = makeMove (1,1) True board
     -- putStrLn $ printBoard (state,sol)
@@ -135,37 +145,37 @@ ai s = do
     -- putStrLn $ show $ printBoard board''
     -- minesweeper board
 
-minesweeper :: Board -> IO ()
-minesweeper (state, sol) = do
-    putStrLn $ show state
-    putStrLn $ show $ aiMove (state,sol)
-    if win (state, sol)
-    then putStrLn "You Win, Congrats!"
-    else
-        if lost (state,sol)
-        then putStrLn "Boom! You lost :("
-        else do
-            if (aiMove (state,sol)) == []
-            then do
-                (point, move) <- getMove
-                minesweeper (makeMove point move (state,sol))
-            else do
-               let possMoves = aiMove (state,sol)
-               let (point, move) = head possMoves
-               minesweeper (makeMove point move (state,sol))
+-- minesweeper :: Board -> IO ()
+-- minesweeper (state, sol) = do
+--     putStrLn $ show state
+--     putStrLn $ show $ aiMove (state,sol)
+--     if win (state, sol)
+--     then putStrLn "You Win, Congrats!"
+--     else
+--         if lost (state,sol)
+--         then putStrLn "Boom! You lost :("
+--         else do
+--             if (aiMove (state,sol)) == []
+--             then do
+--                 (point, move) <- getMove
+--                 minesweeper (makeMove point move (state,sol))
+--             else do
+--                let possMoves = aiMove (state,sol)
+--                let (point, move) = head possMoves
+--                minesweeper (makeMove point move (state,sol))
 
-getMove :: IO Move
-getMove = do
-    putStrLn "Enter a action: (f|r)"
-    action <- getLine
-    let move = head action
-    putStrLn "Enter a row: (1..N)"
-    row <- getInt
-    putStrLn "Enter a col: (1..N)"
-    col <- getInt
-    let moveType | (move == 'f') = False
-                 | otherwise = True
-    return ((row,col),moveType)
+-- getMove :: IO Move
+-- getMove = do
+--     putStrLn "Enter a action: (f|r)"
+--     action <- getLine
+--     let move = head action
+--     putStrLn "Enter a row: (1..N)"
+--     row <- getInt
+--     putStrLn "Enter a col: (1..N)"
+--     col <- getInt
+--     let moveType | (move == 'f') = False
+--                  | otherwise = True
+--     return ((row,col),moveType)
     
-getInt :: IO Int
-getInt = fmap read getLine
+-- getInt :: IO Int
+-- getInt = fmap read getLine

@@ -6,6 +6,19 @@
         <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
         <script src="https://unpkg.com/vue"></script>
     </head>
+    <style>
+        #board{
+           margin-top: 10px; 
+        }
+        .cell {
+            width: 20px;
+            height: 20px;
+            background: grey;
+        }
+        .1{
+            color: gray;
+        }
+    </style>
     <body>
         <div id="app">
             <h1>Haskell Minesweeper</h1>
@@ -17,9 +30,9 @@
             <button v-on:click="aiMove">Ai Move</button>
             <label for="flagged">Flag Mode</label>
             <input type="checkbox" v-model="flag" id="flagged">
-            <table>
+            <table id ="board">
                 <tr v-for="(row,x) in boardState">
-                    <th v-for="(item,y) in row" v-on:click="makeMove(x,y)">{{ item }}</th>
+                    <th class="cell" v-for="(item,y) in row" v-on:click="makeMove(x,y)" v-bind:class="{item}" >{{ item }}</th>
                 </tr>
             </table>
         </div>
@@ -27,7 +40,7 @@
             new Vue({
                 el: "#app",
                 data: {
-                    boardState: [[]],
+                    boardState: ["***","***", "***"],
                     boardSol: [[]],
                     win: false,
                     lost: false,
