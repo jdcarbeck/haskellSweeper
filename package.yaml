@@ -30,6 +30,7 @@ dependencies:
 - text
 - aeson
 - vector
+- optparse-generic
 
 
 

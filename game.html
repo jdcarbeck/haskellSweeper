@@ -28,6 +28,8 @@
             </p>
             <button v-on:click="newGame">New Game</button>
             <button v-on:click="aiMove">Ai Move</button>
+            <h2 v-if="win">You Win!</h2>
+            <h2 v-if="lost">You Lose :(</h2>
             <label for="flagged">Flag Mode</label>
             <input type="checkbox" v-model="flag" id="flagged">
             <table id ="board">
@@ -43,7 +45,7 @@
                     boardState: ["***","***", "***"],
                     boardSol: [[]],
                     win: false,
-                    lost: false,
+                    lost: true,
                     flag: false
                 },
                 methods: {

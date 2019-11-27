@@ -10,6 +10,7 @@ import Data.Matrix
 import qualified Data.Vector as V
 import Data.Aeson (ToJSON, FromJSON, toEncoding, genericToEncoding, defaultOptions, encode, decode)
 import Control.Monad.IO.Class
+import Options.Generic
 
 
 import Web.Scotty
@@ -48,19 +49,21 @@ instance FromJSON MoveFromState
 
 
 main :: IO ()
-main = scotty 3000 $ do
-    get "/" $ do
-        html $ page
-    get "/new" $ do
-        seed <- liftIO newStdGen
-        let board = newGame 10 10 10 seed
-        newGameBoard board
-    post "/" $ do
-        x <- jsonData
-        move x
-    post "/ai" $ do
-        x <- jsonData
-        ai x
+main = do
+    (r, c, b) <- getRecord "Example Program"
+    scotty 3000 $ do
+        get "/" $ do
+            html $ page
+        get "/new" $ do
+            seed <- liftIO newStdGen
+            let board = newGame r c b seed
+            newGameBoard board
+        post "/" $ do
+            x <- jsonData
+            move x
+        post "/ai" $ do
+            x <- jsonData
+            ai x
 
 
 page :: T.Text
@@ -71,12 +74,14 @@ page = do
             H.script H.! A.src "https://unpkg.com/axios/dist/axios.min.js" $ " "
             H.script H.! A.src "https://unpkg.com/vue" $ " "
         H.body $ do
-            H.style $ ".cell { width: 20px; height: 20px; background-color: black; color: white; } #board{ margin-top: 10px; }"
+            H.style $ ".cell { width: 20px; height: 20px; background-color: black; color: white; } #board{ margin-top: 10px; } #winMsg { color: green; } #lostMsg { color: red; }"
             H.div H.! A.id "app" $ do
                 H.h1 "Minesweeper"
                 H.p "Click cells to reveal them, use the flag option to flag cells when clicking."
                 H.button H.! C.customAttribute "v-on:click" "newGame" $ "New Game"
                 H.button H.! C.customAttribute "v-on:click" "aiMove" $ "AI Move"
+                H.h2 H.! A.id "winMsg" H.! C.customAttribute "v-if" "win" $ "You Win!"
+                H.h2 H.! A.id "lostMsg" H.! C.customAttribute "v-if" "lost" $ "You Lose :("
                 H.label H.! A.for "flagged" $ "Reveal"
                 H.input H.! A.type_ "checkbox" H.! A.id "flagged" H.! C.customAttribute "v-model" "flag"
                 H.table H.! A.id "board"$ do
@@ -127,55 +132,3 @@ ai s = do
             game = GameState stateArr solArr (win board) (lost board)
         json game
 
-    --     (state,sol) = makeMove (1,1) True board
-    -- putStrLn $ printBoard (state,sol)
-    -- let adjPoints = getAdj (state,sol)
-    -- putStrLn $ show $ adjPoints
-    -- let possibleMovesU = findNeighbors (head adjPoints) state '*'
-    -- let possibleMovesF = findNeighbors (head adjPoints) state 'F'
-    -- putStrLn $ "# of Possible moves Unknown " ++ (show $ possibleMovesU)
-    -- putStrLn $ "# of Possible moves Flagged " ++ (show $ possibleMovesF)
-    -- putStrLn $ show $ digitToInt (state!(head adjPoints))
-    -- let possibleMoves = getPossibleMoves (head adjPoints) state
-    -- let madeMoves = makeMoves possibleMovesU True
-    -- putStrLn $ show $ possibleMoves
-    -- putStrLn $ show $ madeMoves
-    -- let (cord, mvType) = aiMove (state,sol)
-    -- let board'' = makeMove cord mvType (state,sol)
-    -- putStrLn $ show $ printBoard board''
-    -- minesweeper board
-
--- minesweeper :: Board -> IO ()
--- minesweeper (state, sol) = do
---     putStrLn $ show state
---     putStrLn $ show $ aiMove (state,sol)
---     if win (state, sol)
---     then putStrLn "You Win, Congrats!"
---     else
---         if lost (state,sol)
---         then putStrLn "Boom! You lost :("
---         else do
---             if (aiMove (state,sol)) == []
---             then do
---                 (point, move) <- getMove
---                 minesweeper (makeMove point move (state,sol))
---             else do
---                let possMoves = aiMove (state,sol)
---                let (point, move) = head possMoves
---                minesweeper (makeMove point move (state,sol))
-
--- getMove :: IO Move
--- getMove = do
---     putStrLn "Enter a action: (f|r)"
---     action <- getLine
---     let move = head action
---     putStrLn "Enter a row: (1..N)"
---     row <- getInt
---     putStrLn "Enter a col: (1..N)"
---     col <- getInt
---     let moveType | (move == 'f') = False
---                  | otherwise = True
---     return ((row,col),moveType)
-    
--- getInt :: IO Int
--- getInt = fmap read getLine
