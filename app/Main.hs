@@ -74,7 +74,7 @@ page = do
             H.script H.! A.src "https://unpkg.com/axios/dist/axios.min.js" $ " "
             H.script H.! A.src "https://unpkg.com/vue" $ " "
         H.body $ do
-            H.style $ ".cell { width: 20px; height: 20px; background-color: black; color: white; } #board{ margin-top: 10px; } #winMsg { color: green; } #lostMsg { color: red; }"
+            H.style $ " #app { font-family: Helvetica, Arial, sans-serif; } .cell { width: 30px; height: 30px; background-color: lightgray; color: black; } #board{ margin-top: 10px; } #winMsg { color: green; } #lostMsg { color: red; }"
             H.div H.! A.id "app" $ do
                 H.h1 "Minesweeper"
                 H.p "Click cells to reveal them, use the flag option to flag cells when clicking."

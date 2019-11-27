@@ -2,9 +2,9 @@ name:                sweeper
 version:             0.1.0.0
 github:              "githubuser/sweeper"
 license:             BSD3
-author:              "Author name here"
-maintainer:          "example@example.com"
-copyright:           "2019 Author name here"
+author:              "John Carbeck"
+maintainer:          "carbeckj@tcd.ie"
+copyright:           "2019 John Carbeck"
 
 extra-source-files:
 - README.md

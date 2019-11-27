@@ -55,13 +55,6 @@ bombPoints bombs n rand = take n (shuffle' bombs (length bombs) rand)
 genPoints :: Int -> Int -> [Point]
 genPoints w h  = [ (x,y) | x <- [1 .. w], y <- [1 .. h] ]
 
--- Region starting with each point which idetifies the points around it that are not bombs
--- getRegions :: [Point] -> Solution -> [[Point]]
--- getRegions ((i,j):[]) sol = (getRegion (i,j) sol):[]
--- getRegions (x:xs) sol | ((sol!x) == 0) = (getRegion x sol):regions
--- /                      | otherwise = [x]:regions
---                             where regions = getRegions xs sol
-
 getRegion :: Point -> Solution -> [Point]
 getRegion (i,j) sol | ((getCel i j sol) == 0) = findConnected (i,j) sol
                     | otherwise = [] 
