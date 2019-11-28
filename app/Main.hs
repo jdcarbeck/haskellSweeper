@@ -25,6 +25,7 @@ import Solver
 
 type Move = ((Int,Int),Bool)
 
+-- data structure for resulting state, always returned to user
 data GameState = GameState {
     state :: [[Char]],
     sol :: [[Int]],
@@ -36,6 +37,7 @@ instance ToJSON GameState where
     toEncoding = genericToEncoding defaultOptions
 instance FromJSON GameState
 
+-- data structure from making a move on a given state
 data MoveFromState = MoveFromState {
     mvState :: [[Char]],
     mvSol :: [[Int]],
@@ -47,7 +49,7 @@ instance ToJSON MoveFromState where
     toEncoding = genericToEncoding defaultOptions
 instance FromJSON MoveFromState
 
-
+-- routing for requests to server
 main :: IO ()
 main = do
     (r, c, b) <- getRecord "Example Program"
@@ -65,7 +67,7 @@ main = do
             x <- jsonData
             ai x
 
-
+-- create the static page for the game using blaze
 page :: T.Text
 page = do
     R.renderHtml $ do
@@ -89,7 +91,8 @@ page = do
                         H.th H.! A.class_ "cell" H.! C.customAttribute "v-for" "(item,y) in row" H.! C.customAttribute "v-on:click" "makeMove(x,y)" $ "{{ item }}" 
 
             H.script H.! A.type_ "application/javascript" $ "new Vue({ el: \"#app\", data: { boardState: [[]], boardSol: [[]], win: false, lost: false, flag: true }, methods: { newGame: function(){ console.log(\"Making a new game\"); axios.get(\"http://localhost:3000/new\") .then(resp =>{ console.log(resp.data); this.boardState = resp.data.state; this.boardSol = resp.data.sol; this.win = resp.data.isWon; this.lost = resp.data.isLost; }) .catch(error => {}) }, aiMove: function(){ console.log(\"Making a AI move\"); axios.post(\"http://localhost:3000/ai\", { \"mvState\": this.boardState, \"mvSol\": this.boardSol, \"x\": 0, \"y\": 0, \"mvType\": false, }) .then(resp =>{ console.log(resp.data); this.boardState = resp.data.state; this.boardSol = resp.data.sol; this.win = resp.data.isWon; this.lost = resp.data.isLost; }) .catch(error ={}) }, makeMove: function(x,y){ x = x+1; y = y+1; flag = this.flag; console.log(\"Making a move: \" + x + \", \" + y + \" Reveal: \" + flag); axios.post(\"http://localhost:3000/\",{ \"mvState\": this.boardState, \"mvSol\": this.boardSol, \"x\": x, \"y\": y, \"mvType\": this.flag, }) .then(resp =>{ console.log(resp.data.state); this.boardState = resp.data.state; this.boardSol = resp.data.sol; this.win = resp.data.isWon; this.lost = resp.data.isLost; }) .catch(error ={}) } }, mounted: function(){} });"
-                
+    
+-- creates a new game and sends the GameState back as json
 newGameBoard :: Board -> ActionM()
 newGameBoard (state, sol) = do
         let n = nrows state
@@ -102,6 +105,7 @@ matrixToList :: Matrix a -> Int -> [[a]]
 matrixToList m 1 =  [(V.toList $ getRow 1 m)]
 matrixToList m x = (matrixToList m (x-1)) ++ [(V.toList $ getRow x m)]
 
+-- takes MoveFromState and preforms the specified move on the given board
 move :: MoveFromState -> ActionM()
 move s = do
     let boardState = fromLists $ mvState s
@@ -111,7 +115,8 @@ move s = do
         solArr = matrixToList sol' (nrows sol')
         game = GameState stateArr solArr (win (state',sol')) (lost (state',sol'))
     json game
-                    
+     
+-- takes a MoveFrom state and keeps making a AI move until the AI gives a empty list of possible moves
 ai :: MoveFromState -> ActionM()  
 ai s = do 
     let boardState = fromLists $ mvState s

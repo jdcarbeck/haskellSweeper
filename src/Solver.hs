@@ -10,6 +10,7 @@ type Move = (Point,Bool)
 
 type PossibleMoves = [Move]
 
+-- takes a board and generates a list of moves
 aiMove :: Board -> PossibleMoves
 aiMove (state, sol) = genPossibleMoves adjpoints revealed state
                     where
@@ -21,18 +22,22 @@ getCells :: Board -> (Char -> Bool) -> [Point]
 getCells (state, sol) func = findCells points func state
                     where points = genPoints (nrows state) (ncols state)
 
+-- from a list of points uses a condition to return a list of points that satisfiy that condition                    
 findCells :: [Point] -> (Char -> Bool) -> Field -> [Point]
 findCells (x:[]) func state | func (state!x) = [x]
                             | otherwise = [] 
 findCells (x:xs) func state | func (state!x) = x:(findCells xs func state)
                             | otherwise = findCells xs func state
 
+-- condition for revealed                            
 isRevealed :: Char -> Bool
 isRevealed c = (c /= '*')
 
+-- condition for a adj cell
 isAdj :: Char -> Bool
 isAdj c = (c /= ' ') && (c /= 'F') && (c /= '*')
 
+-- returns a ordered list based of the movetype based off the possible moves from the revealed moves in the Field
 genPossibleMoves :: [Point] -> [Point] -> Field -> PossibleMoves
 genPossibleMoves [] p _ = []
 genPossibleMoves (x:[]) p f  = getPossibleMoves x p f
@@ -44,11 +49,12 @@ genPossibleMoves (x:xs) p f  = joinedMoves
                                 joinedMoves | moveType = otherMoves `union` movesForPoint
                                             | otherwise = movesForPoint `union` otherMoves
 
-
+-- returns if the move is a reveal or a flagg
 getMoveType :: PossibleMoves -> Bool
 getMoveType [] = False
 getMoveType ((_,b):_) = b
 
+-- takes a point and a list of points already searched for and determines set of PossibleMoves
 getPossibleMoves :: Point -> [Point] -> Field -> PossibleMoves
 getPossibleMoves p ps field | (label == (length u)) = makeMoves f True
                             | (label == ((length u) + (length f'))) = makeMoves f False
@@ -58,7 +64,7 @@ getPossibleMoves p ps field | (label == (length u)) = makeMoves f True
                         u = (findNeighbors p field mine) \\ ps
                         f' = (findNeighbors p field unKnownCell) \\ ps
                         label = digitToInt (field!p)
-
+                        
 notMine :: Char -> Bool
 notMine c = not (mine c)
 
@@ -68,7 +74,7 @@ unKnownCell c = c == '*'
 mine :: Char -> Bool
 mine c = c == 'F'
 
-
+-- from moves and move type make Possible Moves
 makeMoves :: [Point] -> Bool -> PossibleMoves
 makeMoves [] b = []
 makeMoves (x:xs) b = (x,b):(makeMoves xs b)

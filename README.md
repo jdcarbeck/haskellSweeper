@@ -1,6 +1,6 @@
 # Haskell Minesweeper
 
-# Running the project
+## Running the project
 
 To run the project with stack. Simply build and then execute using the following command
 
@@ -8,7 +8,7 @@ To run the project with stack. Simply build and then execute using the following
 
 Where each option is a integer value
 
-# The approach
+## The approach
 
 The core of the game is implemented in the `Game.hs` module where the minesweeper game rule and data representation is defined. 
 
@@ -20,7 +20,7 @@ The core of the game is implemented in the `Game.hs` module where the minesweepe
     type Board = (Field, Solution)
     type BoardState = [(Point,Char)]
 
-## Generating a New Game
+### Generating a New Game
 
 `newGame :: Int -> Int -> Int -> StdGen -> Board`
 
@@ -32,9 +32,9 @@ The board solution is created using `genSolution :: Bombs -> Solution`. The Bomb
 
 The elements of Solution created by lambda function call to `cellType :: Point -> Bombs -> Int`. The possible values range from -1:8. Bombs on the solution are represented by -1. `cellType` uses the Point value to look at the 8 adjacent cells to determine the value for that given cell in the solution. If the Point in Bombs in true (containing a bomb) then the value is set to -1. Otherwise each of the 8 surrounding cells are combined into a list and enumerated to determine the value of the cell. 
 
-## Making a move
+### Making a move
 
-### Revealing
+#### Revealing
 
 Using the Board, Point is used to change the Field of the Board to reflect a users action. `makeMove :: Point -> Bool -> Board -> Board` . The boolean represents if the action is going to be a flagging move (false) or a revealing move (true). 
 
@@ -55,7 +55,7 @@ From the list of Points that should now be revealed the Field is recursively upd
 - 0:8 for a board cell that contains a adjacency value
 - B for a bomb cell
 
-### Flagging
+#### Flagging
 
 Flagging will simply change the Field at a given point to that of a state char that represents a flag 'F'
 
@@ -67,7 +67,7 @@ The win condition is check simply by determining that the all the Solution Cells
 
 Losing is determined after each move if a Bomb has been Revealed
 
-# Solver
+## Solver
 
 `Solver.hs` contains the methods that describe the AI move. The solution given allows for the deterministic flagging and revealing based of the board state. The current solution does not employ guessing by rather uses a Single Point Strategy.
 
@@ -86,7 +86,7 @@ The approach is based on the suggested algorithm described in the following pape
 
 In cases where a possible move cannot be made the Board remains unchanged.
 
-# User Interface
+## User Interface
 
 The main handling of the user interaction is outline in `main.hs`. Here scotty was used to serve a html document that was generated using blaze. The html page uses javascript to render the board and handle the requests made to the scotty server based of the interaction given. 
 
