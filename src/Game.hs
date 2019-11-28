@@ -20,13 +20,13 @@ genBombs w h n r = matrix w h (\(i,j) -> elem (i,j) p)
                         allp = genPoints w h
                         p = bombPoints allp n r
 
-genSolution :: Matrix Bool -> Solution
+genSolution :: Bombs -> Solution
 genSolution bombs = matrix w h (\(i,j) -> cellType (i,j) bombs)
                         where 
                             w = nrows bombs
                             h = ncols bombs
 
-cellType :: Point -> Matrix Bool -> Int
+cellType :: Point -> Bombs -> Int
 cellType (i,j) bombs | (getBomb i j bombs) = -1
                         | otherwise = sum $ map fromEnum [tl,t,tr,l,r,bl,b,br]
                         where 
@@ -90,7 +90,7 @@ findAdj (x:xs) found sol = findAdj xs' found' sol
                             found' = (x:found)
                             xss = (getRegion x sol) `union` xs
                             xs' = (xss \\ found')
- -- -------------------------------------------------------------------------
+-------------------------------------------------------------------------
 -- Game Function here
 
 newGame :: Int -> Int -> Int -> StdGen -> Board
