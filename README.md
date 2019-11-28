@@ -38,7 +38,7 @@ The elements of Solution created by lambda function call to `cellType :: Point -
 
 Using the Board, Point is used to change the Field of the Board to reflect a users action. `makeMove :: Point -> Bool -> Board -> Board` . The boolean represents if the action is going to be a flagging move (false) or a revealing move (true). 
 
-If the user is attempting to reveal a at a given move. Then a set of adjacent cells on the Field will change their state to be revealed in the Field based off Solution.  This is done by using a Point to find all the adjacent points in the solution. Adjacency for a 0 cell value is all cells next to it that contain a value ≥ 0. Thus from the given point a list is recursively generated that contains Point that are adjacent. 
+If the user is attempting to reveal a at a given move. Then a set of adjacent cells on the Field will change their state to be revealed in the Field based off Solution.  This is done by using a Point to find all the adjacent points in the solution. Adjacency for a 0 cell value is all cells next to it that contain a value ≥ 0. Thus from the given point a list is recursively generated that contains Point that are adjacent.
 
     findAdj :: [Point] -> [Point] -> Solution -> [Point]
     findAdj [] found sol = found
